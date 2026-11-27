@@ -19,6 +19,17 @@ services:
     command: ["php-fpm", "-F"]
     volumes:
       - .:/app
+  node:
+    image: node:22
+    working_dir: /app
+    user: "789401116:789400513"
+    environment:
+      HOME: /tmp
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - 5173:5173
+    volumes:
+      - .:/app
   mysql:
     image: mysql:8.4
     restart: unless-stopped
