@@ -1,34 +1,36 @@
 services:
-  app:
-    image: cgr.dev/chainguard/laravel:latest-dev
-    restart: unless-stopped
-    environment:
-      UID: 789401116
-      GID: 789400513
-    working_dir: /app
-    command: ["php-fpm", "-F"]
-    volumes:
-      - .:/app
-
   nginx:
     image: cgr.dev/chainguard/nginx
     restart: unless-stopped
-    environment:
-      UID: 789401116
-      GID: 789400513
+    depends_on:
+      - app
     ports:
       - 8000:80
     volumes:
       - .:/app
       - ./docker/dev/nginx.conf:/etc/nginx/nginx.conf
-
-  mariadb:
-    image: cgr.dev/chainguard/mariadb
+  app:
+    image: cgr.dev/chainguard/laravel:latest-dev
+    restart: unless-stopped
+    user: "789401116:789400513"
+    depends_on:
+      - mysql
+    working_dir: /app
+    command: ["php-fpm", "-F"]
+    volumes:
+      - .:/app
+  mysql:
+    image: mysql:8.4
     restart: unless-stopped
     environment:
-      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 1
-      MARIADB_USER: sge
-      MARIADB_PASSWORD: sge
-      MARIADB_DATABASE: sge
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: sge
+      MYSQL_USER: sge
+      MYSQL_PASSWORD: sge
     ports:
       - 3306:3306
+    volumes:
+      - db-data:/var/lib/mysql
+
+volumes:
+  db-data:
